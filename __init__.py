@@ -1,5 +1,17 @@
 import argparse
 
+
+MODE = 'wgan-gp'  # wgan or wgan-gp
+DATASET = '8gaussians'  # 8gaussians, 25gaussians, swissroll
+
+FIXED_GENERATOR = False  # whether to hold the generator fixed at real data plus
+# Gaussian noise, as in the plots in the paper
+LAMBDA = .1  # Smaller lambda seems to help for toy tasks specifically
+CRITIC_ITERS = 5  # How many critic iterations per generator iteration
+BATCH_SIZE = 256  # Batch size
+ITERS = 100000  # how many generator iterations to train for
+
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--output_path', type=str, default='result/demoCaptionCoCo/', help='path for the script')
 parser.add_argument('--data_path', type=str, default='dataset/', help='path for the data')
