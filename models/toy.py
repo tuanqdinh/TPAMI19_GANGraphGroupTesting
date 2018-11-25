@@ -1,46 +1,40 @@
 import torch.nn as nn
 import torch.nn.functional as F
 
-DIM = 512  # Model dimensionality
-BATCH_SIZE = 256  # Batch size
-FIXED_GENERATOR = False  # whether to hold the generator fixed at real data plus
-class Generator(nn.Module):
 
-    def __init__(self):
+class Generator(nn.Module):
+    def __init__(self, input_size, output_size, hidden_size):
         super(Generator, self).__init__()
 
         main = nn.Sequential(
-            nn.Linear(2, DIM),
+            nn.Linear(input_size, hidden_size),
             nn.ReLU(True),
-            nn.Linear(DIM, DIM),
+            nn.Linear(hidden_size, 2 * hidden_size),
             nn.ReLU(True),
-            nn.Linear(DIM, DIM),
+            nn.Linear(2 * hidden_size, 2 * hidden_size),
             nn.ReLU(True),
-            nn.Linear(DIM, 2),
+            nn.Linear(2 * hidden_size, output_size),
         )
         self.main = main
 
     def forward(self, noise, real_data):
-        if FIXED_GENERATOR:
-            return noise + real_data
-        else:
-            output = self.main(noise)
-            return output
+        output = self.main(noise)
+        return output
 
 
 class Discriminator(nn.Module):
 
-    def __init__(self):
+    def __init__(self, input_size, hidden_size):
         super(Discriminator, self).__init__()
 
         main = nn.Sequential(
-            nn.Linear(2, DIM),
+            nn.Linear(input_size, hidden_size),
             nn.ReLU(True),
-            nn.Linear(DIM, DIM),
+            nn.Linear(hidden_size, hidden_size//2),
             nn.ReLU(True),
-            nn.Linear(DIM, DIM),
+            nn.Linear(hidden_size//2, hidden_size//2),
             nn.ReLU(True),
-            nn.Linear(DIM, 1),
+            nn.Linear(hidden_size//2, 1),
         )
         self.main = main
 

@@ -6,7 +6,7 @@ from torch.nn.utils.rnn import pack_padded_sequence
 from torchvision import transforms
 from dataset.coco import *
 from models.dmip_coco import *
-from __init__ import *
+from __init__ import args
 
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

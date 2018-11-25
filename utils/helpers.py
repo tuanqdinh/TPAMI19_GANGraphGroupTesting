@@ -8,11 +8,6 @@ import matplotlib.gridspec as gridspec
 from sklearn.manifold import TSNE
 
 
-def log(msg, console_print=True):
-    logf.write(msg + '\n')
-    if console_print:
-        print(msg)
-
 def sample_z(m, n):
 	return np.random.normal(size=[m, n], loc = 0, scale = 1)
 	# return np.random.uniform(-1., 1., size=[m, n])
@@ -23,26 +18,6 @@ def mkdir(name, rm=False):
 	elif rm:
 		shutil.rmtree(name)
 		os.mkdir(name)
-
-def get_model_name_by_dataset(dataset):
-	if dataset == 1:
-		d_name = 'mnist'
-	elif dataset == 2:
-		d_name = 'random'
-	elif dataset == 31:
-		d_name = 'wrap_m'
-	elif dataset == 32:
-		d_name = 'wrap_f'
-	elif dataset == 51:
-		d_name = 'sphere_background'
-	elif dataset == 52:
-		d_name =  'sphere_u'
-	elif dataset == 41 or dataset == 42:
-		d_name = 'mesh'
-	else:
-		d_name = 'gaussians'
-	return d_name
-
 
 ################### Plotting #############################
 def save_images(samples, im_size, path, idx, n_fig_unit=2):
