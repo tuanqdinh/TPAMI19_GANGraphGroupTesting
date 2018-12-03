@@ -11,11 +11,12 @@ __pycache__/
 build/
 develop-eggs/
 dist/
+
 data/
 old/
-models/
-results/
+result/
 tmp/
+
 downloads/
 eggs/
 .eggs/
