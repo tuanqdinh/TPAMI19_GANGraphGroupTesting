@@ -21,7 +21,7 @@ def best(y1, y2, label1='group1', label2='group2', draws = 2000, n_init=200000, 
 	##-------PRIORS- specified our probabilistic model
 	# Means
 	mu_m = y.value.mean()
-	mu_s = y.value.std() * 2 # only here is different
+	mu_s = y.value.std() * 1000 # only here is different
 	with pm.Model() as model:
 		group1_mean = pm.Normal('group1_mean', mu_m, sd=mu_s)
 		group2_mean = pm.Normal('group2_mean', mu_m, sd=mu_s)
@@ -50,7 +50,7 @@ def best(y1, y2, label1='group1', label2='group2', draws = 2000, n_init=200000, 
    ####---- Fit Model
 	with model:
 		#M.sample(iter=110000, burn=10000)
-	   trace = pm.sample(draws=draws, cores=cores, n_init=n_init, progressbar=False)
+	   trace = pm.sample(draws=draws, cores=cores, n_init=n_init, progressbar=False, tune=1000)
 
 	return trace
 

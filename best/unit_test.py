@@ -11,37 +11,48 @@ def count(x, epsilon):
 
 def cal(arr, epsilon):
 	x = [count(x, epsilon) for x in arr]
-	return np.sum(x)
-
+	return np.sum(x) / len(arr)
 
 epsilon = 0.01
+n_pixels = 100
 
-if len(sys.argv) < 3:
+if len(sys.argv) == 4:
 	off_data = int(sys.argv[1])
-	plot_eb(off_data, epsilon)
+	off_gan = int(sys.argv[2])
+	alp = float(sys.argv[3])
+	plot_eb(off_data, off_gan, alp, epsilon)
 else:
-	# print('Arguments!!! data - model - control')
-	# print('----data : 1 ADNI - 2 ADRC - 3 Simuln')
-	# print('----model: 1 lapgan - 2 baseline - 3 real')
-
 	off_data = int(sys.argv[1])
-	off_model = int(sys.argv[2])
+	off_gan = int(sys.argv[2])
+	alp = float(sys.argv[3])
+	off_model = int(sys.argv[4])
 	name_data = offdata2name(off_data)
 	name_model = offmodel2name(off_model)
+	name_gan = offgan2name(off_gan)
 
 	print('---- Working on {} data - {} model'.format(name_data, name_model))
-	root_path = '../result'
-	sample_path = "{}/eb/lsgan/{}_{}".format(root_path, name_data, name_model)
+	root_folder = "../result/eb-same/{}".format(name_gan)
+	sample_folder = "{}_{}_{}".format(name_data, name_gan, name_model)
+	fname = "eval_{}_{}_{}".format(name_data, name_gan, name_model)
+	if off_model == 1:
+		sample_path = "{}/{}_{}".format(root_folder, sample_folder, alp)
+		file_path = "{}/{}_{}_{}.npy".format(root_folder, fname, alp, epsilon)
+	elif off_model == 2:
+		sample_path = os.path.join(root_folder, sample_folder)
+		file_path = "{}/{}_{}.npy".format(root_folder, fname, epsilon)
+	else:
+		sample_folder = '../result/eb-same/real'
+		sample_path = "{}/{}_real".format(sample_folder, name_data)
+		file_path = "{}/eval_{}_{}.npy".format(sample_folder, name_data, epsilon)
 
-	file_path = "{}/eb/lsgan/eval_{}_{}_{}.npy".format(root_path, name_data, name_model, epsilon)
-	# plot_path = "{}/eb/lsgan/plt_{}_{}_{}.png".format(root_path, name_data, name_model, epsilon)
-	n_pixels = 4225
 	results = np.zeros(n_pixels)
 	for i in range(n_pixels):
-		arr = np.load('{}/node{}.npy'.format(sample_path, i))
-		results[i] = cal(arr, epsilon) / n_pixels
-
+		fname = '{}/node{}.npy'.format(sample_path, i)
+		if os.path.exists(fname):
+			arr = np.load(fname)
+			results[i] = cal(arr, epsilon)
+		else:
+			print(i, 'not exists')
+			results[i] = 0
+			# from IPython import embed; embed()
 	np.save(file_path, results)
-
-# from IPython import embed; embed()
-# Plot the distributions

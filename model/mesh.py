@@ -9,10 +9,10 @@ class Generator(nn.Module):
         main = nn.Sequential(
             nn.Linear(input_size, hidden_size),
             nn.BatchNorm1d(num_features=hidden_size),
-            nn.ReLU(True),
+            nn.LeakyReLU(0.2, inplace=True),
             nn.Linear(hidden_size, 2 * hidden_size),
             nn.BatchNorm1d(num_features=2*hidden_size),
-            nn.ReLU(True),
+            nn.LeakyReLU(0.2, inplace=True),
             nn.Linear(2 * hidden_size, output_size),
             nn.Sigmoid()
         )
@@ -31,10 +31,10 @@ class Discriminator(nn.Module):
         main = nn.Sequential(
             nn.Linear(input_size, 2 * hidden_size),
             nn.BatchNorm1d(num_features=2*hidden_size),
-            nn.LeakyReLU(),
+            nn.LeakyReLU(0.2, inplace=True),
             nn.Linear(2 * hidden_size, hidden_size),
             nn.BatchNorm1d(num_features=hidden_size),
-            nn.LeakyReLU(),
+            nn.LeakyReLU(0.2, inplace=True),
             nn.Linear(hidden_size, 1),
         )
         self.main = main

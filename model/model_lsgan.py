@@ -11,6 +11,7 @@ class Generator(nn.Module):
         self.l1 = nn.Sequential(nn.Linear(input_size, 128*self.init_size**2))
 
         self.conv_blocks = nn.Sequential(
+            nn.BatchNorm2d(128), # Dragan
             nn.Upsample(scale_factor=2),
 
             nn.Conv2d(128, 128, 4, stride=1, padding=1),
@@ -24,7 +25,8 @@ class Generator(nn.Module):
             nn.LeakyReLU(0.2, inplace=True),
 
             nn.Conv2d(64, 1, 3, stride=1, padding=1),
-            nn.Tanh()
+            # nn.Tanh()
+            nn.Sigmoid()
         )
 
     def forward(self, z):
