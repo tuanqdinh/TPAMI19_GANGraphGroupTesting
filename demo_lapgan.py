@@ -151,7 +151,7 @@ optimizerD = optim.Adam(netD.parameters(), lr=1e-4, betas=(0.5, 0.9))
 optimizerG = optim.Adam(netG.parameters(), lr=1e-4, betas=(0.5, 0.9))
 
 #####--------------Training----------------------------
-if os.path.isfile(netG_path):
+if os.path.isfile(netG_path) and False:
 	print('Load existing models')
 	netG.load_state_dict(torch.load(netG_path))
 	netD.load_state_dict(torch.load(netD_path))
