@@ -21,15 +21,28 @@ print('----gan: 1 wgan - 2 lsgan')
 print('----model: 1 lapgan - 2 baseline - 3 real')
 
 ### GET Input
-if len(sys.argv) < 4:
+zoom = False
+test = False
+if len(sys.argv) < 3:
 	print('Not enough arguments!!! data - model')
+	os._exit(0)
+elif len(sys.argv) == 3:
+	off_data = int(sys.argv[1])
+	off_gan = int(sys.argv[2])
+	if zoom:
+		plot_ttest_zoom(off_data, off_gan)
+	elif test:
+		plot_ttest_all(off_data, off_gan)
+	else:
+		plot_fdr(off_data, off_gan)
 	os._exit(0)
 elif len(sys.argv) == 4:
 	off_data = int(sys.argv[1])
 	off_gan = int(sys.argv[2])
 	alp = float(sys.argv[3])
 	print('Plotting')
-	plot_ttest(off_data, off_gan, alp)
+	plot_ttest_alp(off_data, off_gan, alp)
+	# plot_fdr(off_data, off_gan, alp)
 	os._exit(0)
 
 off_data = int(sys.argv[1])
@@ -40,7 +53,8 @@ name_data = offdata2name(off_data)
 name_model = offmodel2name(off_model)
 name_gan = offgan2name(off_gan)
 
-print('---- Working on {} data - {} model - {} gan'.format(name_data, name_model, name_gan))
+current_name = "{}-{}-{}".format(name_data, name_gan, name_model)
+print('---- Working on {}'.format(current_name))
 
 root_path = '../result'
 sample_path = "{}/{}".format(root_path, name_gan)
@@ -64,8 +78,8 @@ def _load_signals():
 				ad_signals = ad_signals[:1000, :]
 				cn_signals = cn_signals[:1000, :]
 	else:
-		ad_path = os.path.join(sample_path, 'samples_{}_{}_{}_{}_{}.npy'.format(name_data, name_gan, name_model, 'ad', alp))
-		cn_path = os.path.join(sample_path, 'samples_{}_{}_{}_{}_{}.npy'.format(name_data, name_gan, name_model, 'cn', alp))
+		ad_path = os.path.join(sample_path, 'samples_{}-{}_{}.npy'.format(current_name, 'ad', alp))
+		cn_path = os.path.join(sample_path, 'samples_{}-{}_{}.npy'.format(current_name, 'cn', alp))
 		if off_data == 4:
 			ad_signals = np.load(ad_path)
 			cn_signals = np.load(cn_path)

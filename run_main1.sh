@@ -1,17 +1,19 @@
 #!/bin/sh
-for data in 1
+for data in 2
 do
-  for gan in 1 11 2 21
+  for gan in 1 11 2
   do
-    for model in 1 2
+    for model in 1
     do
       for cn in 1 2
       do
-        for i in 0.001 0.01 0.02 0.03 0.04 0.05 0.06 0.07 0.08 0.09
+        for i in 0.001 0.005 0.007 0.01 0.015
         do
-          python gan_mesh.py --off_data $data --off_ctrl $cn --off_gan $gan --off_model $model --alpha $i
+          python main_wgan.py --off_data $data --off_ctrl $cn --off_gan $gan --off_model $model --alpha $i
         done
       done
     done
   done
 done
+
+#0.1 0.11 0.13 0.15 0.2 0.3 0.5 0.7 1 10

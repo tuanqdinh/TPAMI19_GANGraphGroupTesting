@@ -16,6 +16,10 @@ data/
 old/
 result/
 tmp/
+best/
+images/
+tflib/
+
 
 downloads/
 eggs/

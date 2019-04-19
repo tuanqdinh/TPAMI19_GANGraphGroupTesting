@@ -30,19 +30,22 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 OFFSET_LAPGAN = 1
 # Create model directory
 ### GET Input
-
+'''
 print('Arguments!!! data - model - control')
 print('----data : 1 ADNI - 2 ADRC - 3 Simuln')
 print('----gan: 1 wgan 2 lsgan')
 print('----gan: 0 linear 10 conv 100 gcn')
 print('----model: 1 lapgan - 2 baseline - 3 real')
 print('----control: 1 AD 2 CN')
+'''
 
 name_data = offdata2name(args.off_data)
 name_model = offmodel2name(args.off_model)
 name_ctrl = offctrl2name(args.off_ctrl)
 name_gan = offgan2name(args.off_gan)
-print('---- Working on {} data - {} - {} model - {}'.format(name_data, name_gan, name_model, name_ctrl))
+
+current_name = "{}-{}-{}-{}".format(name_data, name_gan, name_model, name_ctrl)
+print('---- Working on {}'.format(current_name))
 
 if args.off_gan < 10:
 	print('Linear')
@@ -56,8 +59,10 @@ else:
 
 output_folder = "{}/{}/{}".format(name_data, name_model, name_ctrl) # final folder
 gan_path = "{}/{}".format(args.result_path, name_gan)
+
 output_path = os.path.join(gan_path, output_folder)
-model_path = os.path.join(output_path, 'snapshot')
+
+model_path = os.path.join(args.result_path, 'saved_models')
 # sample_path = os.path.join(output_path, 'samples')
 sample_path = gan_path
 log_path = os.path.join(output_path, 'logs')
@@ -87,14 +92,6 @@ else:
 data = torch.tensor(signals, dtype=torch.float32)
 train = torch.utils.data.TensorDataset(data)
 dataloader = torch.utils.data.DataLoader(train, batch_size=args.batch_size, shuffle=True, num_workers=int(args.num_workers))
-# dataloader = torch.utils.data.DataLoader(
-# 		datasets.MNIST('data/mnist', train=True, download=True,
-# 					   transform=transforms.Compose([
-# 						   transforms.ToTensor(),
-# 						   transforms.Normalize((0.1307,), (0.3081,))
-# 					   ])),
-# 						batch_size=args.batch_size, shuffle=True, num_workers=int(args.num_workers))
-
 
 ################### Helpers #################################
 # custom weights initialization called on netG and netD
@@ -142,28 +139,22 @@ def generate_image(netG, frame_index, nsamples, img_size=65):
 	# samples = samples.view(args.batch_size, img_size, img_size)
 	samples = samples.cpu().data.numpy()
 	np.save(
-		'{}/samples_{}_{}_{}_{}_{}.npy'.format(sample_path, name_data, name_gan, name_model, name_ctrl, frame_index),
+		'{}/samples_{}_{}.npy'.format(sample_path, current_name, frame_index),
 		samples
 	)
-	# lib.save_images.save_images(
-	# 		samples,
-	# 		'{}/samples_{}.png'.format(sample_path, frame_index),
-	# 	)
 
 # ==================Model======================
 netG = Generator(input_size=args.embed_size, output_size=args.signal_size, hidden_size=args.hidden_size).to(device)
 netD = Discriminator(input_size=args.signal_size, hidden_size=args.hidden_size).to(device)
 netD.apply(weights_init)
 netG.apply(weights_init)
-print(netG)
-print(netD)
 
 optimizerD = optim.Adam(netD.parameters(), lr=1e-4, betas=(0.5, 0.9))
 optimizerG = optim.Adam(netG.parameters(), lr=1e-4, betas=(0.5, 0.9))
 
 #####--------------Training----------------------------
-netG_path = os.path.join(model_path, 'mesh-netG-99.pth')
-netD_path = os.path.join(model_path, 'mesh-netD-99.pth')
+netG_path = os.path.join(model_path, 'mesh-netG-{}.pth'.format(current_name))
+netD_path = os.path.join(model_path, 'mesh-netD-{}.pth'.format(current_name))
 if os.path.isfile(netG_path):
 	print('Load existing models')
 	netG.load_state_dict(torch.load(netG_path))
@@ -257,7 +248,7 @@ else:
 					  .format(epoch, args.num_epochs, iteration, total_step, D_cost.cpu().data.numpy(), G_cost.cpu().data.numpy(), Wasserstein_D.cpu().data.numpy()))
 			lib.plot.tick()
 	print('save models')
-	# torch.save(netG.state_dict(), os.path.join(model_path, 'mesh-generator-{}.pth'.format(epoch)))
-	# torch.save(netD.state_dict(), os.path.join(model_path, 'mesh-discriminator-{}.pth'.format(epoch)))
+	torch.save(netG.state_dict(), netG_path)
+	torch.save(netD.state_dict(), netD_path)
 print('Generating samples')
-generate_image(netG, frame_index=args.alpha, nsamples=1000)
+generate_image(netG, frame_index=args.alpha, nsamples=200)
