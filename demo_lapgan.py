@@ -212,6 +212,7 @@ else:
 			_data = next(data_iter); iteration += 1
 			real_data = _data[0].to(device)
 			# real_data = real_data.view(-1, args.signal_size)
+			from IPython import embed; embed()
 			real_data_v = autograd.Variable(real_data)
 
 			noise = torch.randn(args.batch_size, args.embed_size).to(device)
@@ -227,6 +228,9 @@ else:
 				yly = torch.mm(yl, real_data_v.t())
 				reg = (xlx.mean().sqrt() - yly.mean().sqrt())**2
 				G_cost = G_cost + args.alpha * reg
+
+			m = (real_data_v.mean(dim=0) - fake.mean(dim=0))
+        	G_cost += 0.01 * (m * m).mean()
 
 			G_cost.backward()
 			optimizerG.step()
