@@ -59,7 +59,7 @@ path_saved_reject = os.path.join(path_ttest, "reject_{}_{}.npy".format(name_data
 mkdir(path_ttest)
 
 def _load_signals():
-	if OFFSET_REAL == off_model: # real data
+	if OFFSET_REAL == args.off_model: # real data
 		if off_data == 4:
 			cn_path = 'data/demo/data_demo_100_{}.npy'.format('cn')
 			ad_path = 'data/demo/data_demo_100_{}.npy'.format('ad')
