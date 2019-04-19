@@ -60,7 +60,7 @@ mkdir(path_ttest)
 
 def _load_signals():
 	if OFFSET_REAL == args.off_model: # real data
-		if off_data == 4:
+		if args.off_data == 4:
 			cn_path = 'data/demo/data_demo_100_{}.npy'.format('cn')
 			ad_path = 'data/demo/data_demo_100_{}.npy'.format('ad')
 			ad_signals = np.load(ad_path)
@@ -75,7 +75,7 @@ def _load_signals():
 	else:
 		ad_path = os.path.join(path_generated_sample, 'samples_{}-{}_{}.npy'.format(name_data_gan_model, 'ad', args.alpha))
 		cn_path = os.path.join(path_generated_sample, 'samples_{}-{}_{}.npy'.format(name_data_gan_model, 'cn', args.alpha))
-		if off_data == 4:
+		if args.off_data == 4:
 			ad_signals = np.load(ad_path)
 			cn_signals = np.load(cn_path)
 		else:
