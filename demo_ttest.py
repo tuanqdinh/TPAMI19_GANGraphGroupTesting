@@ -33,7 +33,7 @@ draws = 2000
 n_init= 200000
 cores = 2
 fraction = 100
-
+ALPHA_BH = 0.05 #0.2
 
 def get_t_stats(data1, data2, pvalue=True):
 	# For each voxel
@@ -104,9 +104,10 @@ else:
 		pvalues = p.map(par_best, range(n_pixels))
 
 	p_values = np.asarray(pvalues)
-	rejects, pvals_corrected, _, _ = multipletests(p_values, alpha=0.2, method='fdr_bh')
+	rejects, pvals_corrected, _, _ = multipletests(p_values, alpha=ALPHA_BH, method='fdr_bh')
 	print("Total time: {:4.4f}".format(time.time() - start_time))
 
 	np.save(path_saved_pvalue, pvals_corrected)
 	np.save(path_saved_reject, rejects)
+	print('#-Reject: ', sum(rejects))
 print('\nFinish ------')
