@@ -50,7 +50,7 @@ if __name__ == '__main__':
 	correction = True
 
 	# Load data
-	[A, ad_signals, cn_signals, data_mean, data_range] = 	load_mat('../fake_data_4k_normalized.mat')#load_mat('data/data_4k_normalized.mat')
+	[A, ad_signals, cn_signals, data_mean, data_range] = load_mat('../fake_data_4k_normalized.mat')#load_mat('data/data_4k_normalized.mat')
 	n_voxels = A.shape[0]
 	ad_signals = re_scale(ad_signals, data_mean, data_range)
 	cn_signals = re_scale(cn_signals, data_mean, data_range)

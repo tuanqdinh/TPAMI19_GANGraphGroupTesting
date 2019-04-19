@@ -59,13 +59,14 @@ else:
 
 output_folder = "{}/{}/{}".format(name_data, name_model, name_ctrl) # final folder
 gan_path = "{}/{}".format(args.result_path, name_gan)
-
 output_path = os.path.join(gan_path, output_folder)
-
 model_path = os.path.join(args.result_path, 'saved_models')
-# sample_path = os.path.join(output_path, 'samples')
 sample_path = gan_path
 log_path = os.path.join(output_path, 'logs')
+
+netG_path = os.path.join(model_path, 'mesh-netG-{}.pth'.format(current_name))
+netD_path = os.path.join(model_path, 'mesh-netD-{}.pth'.format(current_name))
+
 mkdir(output_path)
 mkdir(model_path)
 mkdir(sample_path)
@@ -83,12 +84,10 @@ if args.off_data == 4: # demo
 	args.off_gan = 2
 else:
 	data_path = os.path.join(args.data_path, '{}/data_{}_4k.mat'.format(name_data, name_data))
-	if 1 == args.off_ctrl:
-		A, L, signals = load_data(data_path, is_control=False)
-	else:
-		A, L, signals = load_data(data_path, is_control=True)
+	A, L, signals = load_data(data_path, is_control=not(1 == args.off_ctrl))
 	lap_matrx = torch.tensor(L, dtype=torch.float32).to(device)
 	adj = A.to(device)
+
 data = torch.tensor(signals, dtype=torch.float32)
 train = torch.utils.data.TensorDataset(data)
 dataloader = torch.utils.data.DataLoader(train, batch_size=args.batch_size, shuffle=True, num_workers=int(args.num_workers))
@@ -110,7 +109,6 @@ def weights_init(m):
 	elif classname.find('BatchNorm') != -1:
 		m.weight.data.normal_(1.0, 0.02)
 		m.bias.data.fill_(0)
-
 
 def calc_gradient_penalty(netD, real_data, fake_data):
 	alpha = torch.rand(real_data.size()[0], 1)
@@ -153,8 +151,6 @@ optimizerD = optim.Adam(netD.parameters(), lr=1e-4, betas=(0.5, 0.9))
 optimizerG = optim.Adam(netG.parameters(), lr=1e-4, betas=(0.5, 0.9))
 
 #####--------------Training----------------------------
-netG_path = os.path.join(model_path, 'mesh-netG-{}.pth'.format(current_name))
-netD_path = os.path.join(model_path, 'mesh-netD-{}.pth'.format(current_name))
 if os.path.isfile(netG_path):
 	print('Load existing models')
 	netG.load_state_dict(torch.load(netG_path))
@@ -250,5 +246,6 @@ else:
 	print('save models')
 	torch.save(netG.state_dict(), netG_path)
 	torch.save(netD.state_dict(), netD_path)
+
 print('Generating samples')
 generate_image(netG, frame_index=args.alpha, nsamples=200)
