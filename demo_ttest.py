@@ -69,7 +69,7 @@ def _load_signals():
 		else:
 			_, _, ad_signals = load_data(path_real_data, is_control=False)
 			_, _, cn_signals = load_data(path_real_data, is_control=True)
-			if off_data == 3: # Simuln
+			if args.off_data == 3: # Simuln
 				ad_signals = ad_signals[:1000, :]
 				cn_signals = cn_signals[:1000, :]
 	else:
