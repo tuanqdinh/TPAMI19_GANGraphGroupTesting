@@ -1,5 +1,5 @@
 '''
-    Save pvalues and rejects to files 
+	Save pvalues and rejects to files
 '''
 import numpy as np
 import scipy.io as spio
@@ -95,11 +95,11 @@ else:
 	n_pixels = ad_signals.shape[1]
 	num_cores = multiprocessing.cpu_count() - 3
 	start_time = time.time()
-    def par_best(j):
-    	print('\nVertex {}\n'.format(j))
-    	ad = ad_signals[:, j]
-    	cn = cn_signals[:, j]
-    	return get_t_stats(ad, cn)
+	def par_best(j):
+		print('\nVertex {}\n'.format(j))
+		ad = ad_signals[:, j]
+		cn = cn_signals[:, j]
+		return get_t_stats(ad, cn)
 	with MyPool(num_cores) as p:
 		pvalues = p.map(par_best, range(n_pixels))
 
@@ -108,5 +108,5 @@ else:
 	print("Total time: {:4.4f}".format(time.time() - start_time))
 
 	np.save(path_saved_pvalue, pvals_corrected)
-    np.save(path_saved_reject, rejects)
+	np.save(path_saved_reject, rejects)
 print('\nFinish ------')
