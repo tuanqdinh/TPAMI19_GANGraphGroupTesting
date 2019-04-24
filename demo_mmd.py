@@ -1,30 +1,29 @@
 
 import torch
 import torch.nn as nn
-import torch.nn.parallel
 import torch.backends.cudnn as cudnn
 import torch.utils.data
 import torchvision.utils as vutils
 from torch.autograd import Variable
 import torch.nn.functional as F
 
-import os
-import timeit
+import os, timeit, random
 import numpy as np
 import argparse
-import random
 
 import model.mmd_utils as util
 from model.mmd_kernels import mix_rbf_mmd2
 from model.mmd_gan import Encoder, Decoder, weights_init
-from util.helper import *
+from util.helper import mkdir
 
 os.environ['CUDA_VISIBLE_DEVICES'] = "2"
 
-# NetD is an encoder + decoder
-# input: batch_size * nc * image_size * image_size
-# f_enc_X: batch_size * k * 1 * 1
-# f_dec_X: batch_size * nc * image_size * image_size
+'''
+    NetD is an encoder + decoder
+    input: batch_size * nc * image_size * image_size
+    f_enc_X: batch_size * k * 1 * 1
+    f_dec_X: batch_size * nc * image_size * image_size
+'''
 class NetD(nn.Module):
     def __init__(self, encoder, decoder):
         super(NetD, self).__init__()
@@ -62,7 +61,7 @@ class ONE_SIDED(nn.Module):
         return output
 
 
-# Get argument
+############### Get argument
 parser = argparse.ArgumentParser()
 parser = util.get_args(parser)
 args = parser.parse_args()
@@ -72,6 +71,7 @@ if args.experiment is None:
     args.experiment = 'samples'
 mkdir(args.experiment)
 
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 if torch.cuda.is_available():
     args.cuda = True
     torch.cuda.set_device(args.gpu_device)
@@ -96,17 +96,13 @@ trn_loader = torch.utils.data.DataLoader(trn_dataset,
 
 # construct encoder/decoder modules
 hidden_dim = args.nz
-G_decoder = Decoder(args.image_size, args.nc, k=args.nz, ngf=64)
-D_encoder = Encoder(args.image_size, args.nc, k=hidden_dim, ndf=64)
-D_decoder = Decoder(args.image_size, args.nc, k=hidden_dim, ngf=64)
+G_decoder = Decoder(embed_dim=args.nc, output_dim=args.image_size**2)
+D_encoder = Encoder(input_dim=args.image_size, embed_dim=args.nc)
+D_decoder = Decoder(embed_dim=args.nc, output_dim=args.image_size**2)
 
-netG = NetG(G_decoder)
-netD = NetD(D_encoder, D_decoder)
-one_sided = ONE_SIDED()
-print("netG:", netG)
-print("netD:", netD)
-print("oneSide:", one_sided)
-
+netG = NetG(G_decoder).to(device)
+netD = NetD(D_encoder, D_decoder).to(device)
+one_sided = ONE_SIDED().to(device)
 netG.apply(weights_init)
 netD.apply(weights_init)
 one_sided.apply(weights_init)
@@ -120,10 +116,6 @@ sigma_list = [sigma / base for sigma in sigma_list]
 fixed_noise = torch.cuda.FloatTensor(64, args.nz, 1, 1).normal_(0, 1)
 one = torch.cuda.FloatTensor([1])
 mone = one * -1
-if args.cuda:
-    netG.cuda()
-    netD.cuda()
-    one_sided.cuda()
 fixed_noise = Variable(fixed_noise, requires_grad=False)
 
 # setup optimizer

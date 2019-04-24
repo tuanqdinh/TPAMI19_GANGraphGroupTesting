@@ -6,82 +6,40 @@ import torch.nn as nn
 # input: batch_size * nc * 64 * 64
 # output: batch_size * k * 1 * 1
 class Encoder(nn.Module):
-    def __init__(self, isize, nc, k=100, ndf=64):
+    def __init__(self, input_dim, embed_dim):
         super(Encoder, self).__init__()
 
+        self.input_dim = input_dim**2
         self.model_encode = nn.Sequential(
-            nn.Linear(1024*3, 1000),
+            nn.Linear(input_dim, input_dim//2),
             nn.ReLU(),
             # nn.BatchNorm1d(100)
-            nn.Linear(1000, 400),
+            nn.Linear(input_dim//2, input_dim//4),
             nn.ReLU(),
+            nn.Linear(input_dim//2, embed_dim)
         )
-        self.fc_mu = nn.Linear(400, 20)
-
-        self.model_decode = nn.Sequential(
-            nn.Linear(20, 400),
-            nn.ReLU(),
-            nn.Linear(400, 1000),
-            nn.ReLU(),
-            nn.Linear(1000, 1024*3),
-            nn.Sigmoid()
-        )
-        # netD = PointNetCls(k = 1, num_points = args.num_points).to(device)
-        # netG = PointGen(num_points = args.num_points).to(device)
-
-    def encode(self, x):
-        h1 = self.model_encode(x)
-        return self.fc_mu(h1)
-
-    def decode(self, z):
-        return self.model_decode(z)
 
     def forward(self, x):
-        z = self.encode(x.view(-1, 1024 * 3))
-        return self.decode(z), z
+        z = self.model_encode(x.view(-1, self.input_dim))
+        return z
 
-    def forward(self, input):
-        output = self.main(input)
-        return output
-
-
-# input: batch_size * k * 1 * 1
-# output: batch_size * nc * image_size * image_size
 class Decoder(nn.Module):
-    def __init__(self, isize, nc, k=100, ngf=64):
+    def __init__(self, embed_dim, output_dim):
         super(Decoder, self).__init__()
-        assert isize % 16 == 0, "isize has to be a multiple of 16"
 
-        cngf, tisize = ngf // 2, 4
-        while tisize != isize:
-            cngf = cngf * 2
-            tisize = tisize * 2
+        self.embed_dim = embed_dim
+        self.model_encode = nn.Sequential(
+            nn.Linear(embed_dim, embed_dim * 2),
+            nn.ReLU(),
+            # nn.BatchNorm1d(100)
+            nn.Linear(embed_dim * 2, embed_dim * 4),
+            nn.ReLU(),
+            nn.Linear(embed_dim * 2, output_dim)
+        )
 
-        main = nn.Sequential()
-        main.add_module('initial-{0}-{1}-convt'.format(k, cngf), nn.ConvTranspose2d(k, cngf, 4, 1, 0, bias=False))
-        main.add_module('initial-{0}-batchnorm'.format(cngf), nn.BatchNorm2d(cngf))
-        main.add_module('initial-{0}-relu'.format(cngf), nn.ReLU(True))
-
-        csize = 4
-        while csize < isize // 2:
-            main.add_module('pyramid-{0}-{1}-convt'.format(cngf, cngf // 2),
-                            nn.ConvTranspose2d(cngf, cngf // 2, 4, 2, 1, bias=False))
-            main.add_module('pyramid-{0}-batchnorm'.format(cngf // 2),
-                            nn.BatchNorm2d(cngf // 2))
-            main.add_module('pyramid-{0}-relu'.format(cngf // 2),
-                            nn.ReLU(True))
-            cngf = cngf // 2
-            csize = csize * 2
-
-        main.add_module('final-{0}-{1}-convt'.format(cngf, nc), nn.ConvTranspose2d(cngf, nc, 4, 2, 1, bias=False))
-        main.add_module('final-{0}-tanh'.format(nc),
-                        nn.Tanh())
-
-        self.main = main
-
-    def forward(self, input):
-        output = self.main(input)
-        return output
+    def forward(self, z):
+        x = self.model_encode(z.view(-1, self.embed_dim))
+        return x
 
 
 def grad_norm(m, norm_type=2):
