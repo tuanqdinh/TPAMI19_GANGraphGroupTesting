@@ -27,7 +27,7 @@ parser.add_argument('--off_data', type=int, default=1)
 parser.add_argument('--off_model', type=int, default=2)
 parser.add_argument('--off_ctrl', type=int, default=1)
 parser.add_argument('--off_gan', type=int, default=1)
-parser.add_argument('--alpha', type=float, default=0.01)
+parser.add_argument('--alpha', type=float, default=0.03)
 
 args = parser.parse_args()
 print(args)

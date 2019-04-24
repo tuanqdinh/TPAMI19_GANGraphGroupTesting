@@ -105,23 +105,23 @@ def get_t_stats(data1, data2, pvalue=True):
 		return twosample_results[0]
 
 def par_best(j):
-	print('\nVertex {}\n'.format(j))
+	# print('\nVertex {}\n'.format(j))
 	ad = ad_signals[:, j]
 	cn = cn_signals[:, j]
 	return get_t_stats(ad, cn)
 
-if os.path.isfile(file_path):
-	print('Exists!!')
-else:
-	n_pixels = ad_signals.shape[1]
-	num_cores = multiprocessing.cpu_count() - 3
-	start_time = time.time()
-	with MyPool(num_cores) as p:
-		pvalues = p.map(par_best, range(n_pixels))
+# if os.path.isfile(file_path):
+# 	print('Exists!!')
+# else:
+n_pixels = ad_signals.shape[1]
+num_cores = multiprocessing.cpu_count() - 3
+start_time = time.time()
+with MyPool(num_cores) as p:
+	pvalues = p.map(par_best, range(n_pixels))
 
-	p_values = np.asarray(pvalues)
-	_, pvals_corrected, alphacSidak, alphacBonf = multipletests(p_values, alpha=0.2, method='fdr_bh')
-	print("Total time: {:4.4f}".format(time.time() - start_time))
+p_values = np.asarray(pvalues)
+rejects, pvals_corrected, alphacSidak, alphacBonf = multipletests(p_values, alpha=0.2, method='fdr_bh')
+# print("Total time: {:4.4f}".format(time.time() - start_time))
 
-	np.save(file_path, pvals_corrected)
+np.save(file_path, pvals_corrected)
 print('\nFinish ------')

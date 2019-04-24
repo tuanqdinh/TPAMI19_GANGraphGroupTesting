@@ -27,9 +27,8 @@ class GraphConvolution(Module):
             self.bias.data.uniform_(-stdv, stdv)
 
     def forward(self, input, adj):
-        from IPython import embed; embed()
         support = torch.mm(input, self.weight)
-        output = torch.spmm(adj, support)
+        output = torch.mm(adj, support)
         if self.bias is not None:
             return output + self.bias
         else:
@@ -44,7 +43,7 @@ class Generator(nn.Module):
     def __init__(self, input_size, output_size, hidden_size):
         super(Generator, self).__init__()
 
-        main = nn.Sequential(
+        self.main = nn.Sequential(
             nn.Linear(input_size, hidden_size),
             nn.BatchNorm1d(num_features=hidden_size),
             nn.LeakyReLU(0.2, inplace=True),
@@ -52,9 +51,8 @@ class Generator(nn.Module):
             nn.BatchNorm1d(num_features=2*hidden_size),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Linear(2 * hidden_size, output_size),
-            nn.Sigmoid()
+            nn.Tanh()
         )
-        self.main = main
 
     def forward(self, noise):
         output = self.main(noise)
@@ -63,9 +61,10 @@ class Generator(nn.Module):
 
 class Discriminator(nn.Module):
 
-    def __init__(self, input_size, hidden_size):
+    def __init__(self, input_size, hidden_size, adj):
         super(Discriminator, self).__init__()
 
+        self.adj = adj
         self.gc1 = GraphConvolution(input_size, 2*hidden_size)
         self.block1 = nn.Sequential(
             nn.BatchNorm1d(num_features=2*hidden_size),
@@ -78,9 +77,10 @@ class Discriminator(nn.Module):
             nn.Linear(hidden_size, 1),
         )
 
-    def forward(self, inputs, adj):
-        x = self.gc1(inputs, adj)
+    def forward(self, inputs):
+        x = self.gc1(inputs.t(), self.adj)
         x = self.block1(x)
-        x = self.gc2(x, adj)
+        x = self.gc2(x, self.adj)
         output = self.block2(x)
         return output.view(-1)
+        # return F.log_softmax(output, dim=1)

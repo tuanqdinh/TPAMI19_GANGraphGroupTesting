@@ -1,11 +1,11 @@
-import os, sys
+import os, sys, time
 sys.path.append(os.getcwd())
 import numpy as np
 from time import gmtime, strftime
 import sklearn.datasets
 
 import matplotlib
-matplotlib.use('Agg')
+# matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 import torch
@@ -24,6 +24,7 @@ from __init__ import args
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 ################## MAIN #######################
+start_time = time.time()
 
 torch.manual_seed(1)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -75,18 +76,25 @@ logf = open(os.path.join(log_path, "log%s.txt" % strftime("%Y-%m-%d-%H:%M:%S", g
 
 ###------------------ Data -----------------------
 if args.off_data == 4: # demo
-	cn_path = 'data/demo/data_demo_100_{}.npy'.format(name_ctrl)
-	signals = np.load(cn_path)
-	args.signal_size =100
-	args.img_size =10
-	args.embed_size =10
-	args.hidden_size =32
-	args.off_gan = 2
+	data_path = os.path.join(args.data_path, '{}/data_{}.npy'.format(name_data, name_data))
+	dict = np.load(data_path).item()
+	#####
+	if args.off_ctrl == 1:
+		signals = dict['ad']
+	else:
+		signals = dict['cn']
+	adj = torch.tensor(dict['A'],  dtype=torch.float32).to(device)
+	lap_matrx = torch.tensor(dict['L'],  dtype=torch.float32).to(device)
+	####
+	args.signal_size = signals.shape[1]
+	args.hidden_size = signals.shape[1] // 4
+	args.embed_size = signals.shape[1] // 20
 else:
 	data_path = os.path.join(args.data_path, '{}/data_{}_4k.mat'.format(name_data, name_data))
 	A, L, signals = load_data(data_path, is_control=not(1 == args.off_ctrl))
 	lap_matrx = torch.tensor(L, dtype=torch.float32).to(device)
-	adj = A.to(device)
+	# adj = torch.tensor(A, dtype=torch.float32).to(device)
+	adj = A.to(device).to_dense()
 
 data = torch.tensor(signals, dtype=torch.float32)
 train = torch.utils.data.TensorDataset(data)
@@ -140,10 +148,18 @@ def generate_image(netG, frame_index, nsamples, img_size=65):
 		'{}/samples_{}_{}.npy'.format(sample_path, current_name, frame_index),
 		samples
 	)
+	x = np.mean(samples, axis=0)
+	y = np.mean(signals, axis=0)
+	plt.scatter(range(100), x[:100])
+	plt.scatter(range(100), y[:100])
+	plt.show()
+	# from IPython import embed;embed()
 
 # ==================Model======================
 netG = Generator(input_size=args.embed_size, output_size=args.signal_size, hidden_size=args.hidden_size).to(device)
-netD = Discriminator(input_size=args.signal_size, hidden_size=args.hidden_size).to(device)
+# netD = Discriminator(input_size=args.signal_size, hidden_size=args.hidden_size).to(device)
+netD = Discriminator(input_size=args.batch_size, hidden_size=args.batch_size * 2, adj=adj).to(device)
+
 netD.apply(weights_init)
 netG.apply(weights_init)
 
@@ -174,22 +190,27 @@ else:
 
 				real_data = _data[0].to(device)
 				# real_data = real_data.view(-1, args.signal_size)
-				real_data_v = autograd.Variable(real_data)
-				netD.zero_grad()
+				with torch.no_grad():
+					real_data_v = autograd.Variable(real_data)
+
+				optimizerD.zero_grad()
 
 				# train with real
 				# from IPython import embed; embed()
 				D_real = netD(real_data_v)
 				D_real = D_real.mean()
 				# (-D_real).backward()
+				# D_real = (D_real * torch.mv(lap_matrx, D_real)).mean()
 
 				# train with fake
 				noise = torch.randn(real_data_v.size()[0], args.embed_size).to(device)
-				noisev = autograd.Variable(noise, volatile=True)  # totally freeze netG
+				with torch.no_grad():
+					noisev = autograd.Variable(noise)  # totally freeze netG
 				fake = autograd.Variable(netG(noisev).data)
 				inputv = fake
 				D_fake = netD(inputv)
 				D_fake = D_fake.mean()
+				# D_fake = (D_fake * torch.mv(lap_matrx, D_fake)).mean()
 				# D_fake.backward()
 
 				# train with gradient penalty
@@ -207,30 +228,43 @@ else:
 			###########################
 			for p in netD.parameters():
 				p.requires_grad = False  # to avoid computation
-			netG.zero_grad()
+
+			optimizerG.zero_grad()
 
 			_data = next(data_iter); iteration += 1
 			real_data = _data[0].to(device)
 			# real_data = real_data.view(-1, args.signal_size)
-			from IPython import embed; embed()
-			real_data_v = autograd.Variable(real_data)
+			#from IPython import embed; embed()
+			with torch.no_grad():
+				real_data_v = autograd.Variable(real_data)
 
 			noise = torch.randn(args.batch_size, args.embed_size).to(device)
-			noisev = autograd.Variable(noise)
+			with torch.no_grad():
+				noisev = autograd.Variable(noise)
 			fake = netG(noisev)
 			D_fake = netD(fake)
+			# D_fake_cost = (D_fake * torch.mv(lap_matrx, D_fake)).mean()
+			# G_cost = -D_fake_cost
+
 			G_cost = -D_fake.mean()
+			# if OFFSET_LAPGAN == args.off_model: # laplacian
+			# 	xl = torch.mm(fake, lap_matrx)
+			#
+			# 	xlx = torch.mm(xl, fake.t())
+			# 	yl = torch.mm(real_data_v, lap_matrx)
+			# 	yly = torch.mm(yl, real_data_v.t())
+			# 	reg = (xlx.mean().sqrt() - yly.mean().sqrt())**2
+			# 	G_cost = G_cost + args.alpha * reg
 
 			if OFFSET_LAPGAN == args.off_model: # laplacian
-				xl = torch.mm(fake, lap_matrx)
-				xlx = torch.mm(xl, fake.t())
-				yl = torch.mm(real_data_v, lap_matrx)
-				yly = torch.mm(yl, real_data_v.t())
-				reg = (xlx.mean().sqrt() - yly.mean().sqrt())**2
-				G_cost = G_cost + args.alpha * reg
+				x = fake.mean(dim=0)
+				y = real_data_v.mean(dim=0)
+				diff = x - y
+				reg = torch.dot(diff, torch.mv(lap_matrx, diff))
+				G_cost = G_cost + 15 * reg / lap_matrx.shape[0]
 
-			m = (real_data_v.mean(dim=0) - fake.mean(dim=0))
-        	G_cost += 0.01 * (m * m).mean()
+				m = real_data_v.mean(dim=0) - fake.mean(dim=0)
+				G_cost += (m * m).mean()
 
 			G_cost.backward()
 			optimizerG.step()
@@ -242,14 +276,15 @@ else:
 			lib.plot.plot(output_path + '/gen_cost', G_cost.cpu().data.numpy())
 			# Print log info
 			if iteration == total_step:
-				lib.plot.flush()
+				# lib.plot.flush()
 				# generate_image(netG, frame_index=epoch, img_size=args.img_size, nsamples=args.batch_size)
 				log('Epoch [{}/{}], Step [{}/{}], D-cost: {:.4f}, G-cost: {:.4f}, W-distance: {:.4f}'
 					  .format(epoch, args.num_epochs, iteration, total_step, D_cost.cpu().data.numpy(), G_cost.cpu().data.numpy(), Wasserstein_D.cpu().data.numpy()))
-			lib.plot.tick()
+			# lib.plot.tick()
 	print('save models')
 	torch.save(netG.state_dict(), netG_path)
 	torch.save(netD.state_dict(), netD_path)
 
 print('Generating samples')
 generate_image(netG, frame_index=args.alpha, nsamples=200)
+print("Total time: {:4.4f}".format(time.time() - start_time))
