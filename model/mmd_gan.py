@@ -9,14 +9,15 @@ class Encoder(nn.Module):
     def __init__(self, input_dim, embed_dim):
         super(Encoder, self).__init__()
 
-        self.input_dim = input_dim**2
+        self.input_dim = input_dim
+        self.embed_dim = embed_dim
         self.model_encode = nn.Sequential(
             nn.Linear(input_dim, input_dim//2),
             nn.ReLU(),
             # nn.BatchNorm1d(100)
             nn.Linear(input_dim//2, input_dim//4),
             nn.ReLU(),
-            nn.Linear(input_dim//2, embed_dim)
+            nn.Linear(input_dim//4, embed_dim)
         )
 
     def forward(self, x):
@@ -34,7 +35,7 @@ class Decoder(nn.Module):
             # nn.BatchNorm1d(100)
             nn.Linear(embed_dim * 2, embed_dim * 4),
             nn.ReLU(),
-            nn.Linear(embed_dim * 2, output_dim)
+            nn.Linear(embed_dim * 4, output_dim)
         )
 
     def forward(self, z):

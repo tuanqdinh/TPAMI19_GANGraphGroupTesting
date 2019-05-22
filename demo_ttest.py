@@ -11,6 +11,7 @@ from util.mypool import MyPool
 from scipy.stats import ttest_ind
 from statsmodels.sandbox.stats.multicomp import multipletests
 import argparse
+from __init__ import args
 
 '''
 print('Arguments!!! data - model - control')
@@ -18,15 +19,17 @@ print('----data : 1 ADNI - 2 ADRC - 3 Simuln - 4 Demo')
 print('----gan: 1 wgan - 2 lsgan - 100 gcn')
 print('----model: 1 lapgan - 2 baseline - 3 real')
 '''
-parser = argparse.ArgumentParser()
-parser.add_argument('--off_data', type=int, default=1)
-parser.add_argument('--off_model', type=int, default=2)
-parser.add_argument('--off_gan', type=int, default=1)
-parser.add_argument('--alpha', type=float, default=0.03)
-parser.add_argument('--path_result', type=str, default='result', help='result path')
-parser.add_argument('--path_data', type=str, default='data/', help='path for data')
-
-args = parser.parse_args()
+# parser = argparse.ArgumentParser()
+# parser.add_argument('--off_data', type=int, default=1)
+# parser.add_argument('--off_model', type=int, default=2)
+# parser.add_argument('--off_gan', type=int, default=1)
+# parser.add_argument('--alpha', type=float, default=0.03)
+# parser.add_argument('--path_result', type=str, default='result', help='result path')
+# parser.add_argument('--path_data', type=str, default='data/', help='path for data')
+#
+# args = parser.parse_args()
+args.path_data = 'data/'
+args.path_result = 'result/'
 
 OFFSET_REAL = 3
 draws = 2000
@@ -71,6 +74,9 @@ def _load_signals():
 			if args.off_data == 3: # Simuln
 				ad_signals = ad_signals[:1000, :]
 				cn_signals = cn_signals[:1000, :]
+		# add exp
+		ad_signals = np.exp(ad_signals)
+		cn_signals = np.exp(cn_signals)
 	else:
 		ad_path = os.path.join(path_generated_sample, 'samples_{}-{}_{}.npy'.format(name_data_gan_model, 'ad', args.alpha))
 		cn_path = os.path.join(path_generated_sample, 'samples_{}-{}_{}.npy'.format(name_data_gan_model, 'cn', args.alpha))
@@ -102,9 +108,13 @@ def par_best(j):
 with MyPool(num_cores) as p:
 	pvalues = p.map(par_best, range(n_pixels))
 
+
 p_values = np.asarray(pvalues)
 rejects, pvals_corrected, _, _ = multipletests(p_values, alpha=ALPHA_BH, method='fdr_bh')
 # print("Total time: {:4.4f}".format(time.time() - start_time))
+
+from IPython import embed; embed()
+
 np.save(path_saved_pvalue, pvals_corrected)
 np.save(path_saved_reject, rejects)
 print('#-Reject: ', sum(rejects))

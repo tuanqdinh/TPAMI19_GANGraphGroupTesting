@@ -9,20 +9,15 @@ import numpy as np
 import os, sys, time
 from util.helper import *
 import argparse
-
+from __init__ import args
 '''
 print('Arguments!!! data - model - control')
 print('----data : 1 ADNI - 2 ADRC - 3 Simuln')
 print('----gan: 1 wgan - 2 lsgan')
 print('----model: 1 lapgan - 2 baseline - 3 real')
 '''
-parser = argparse.ArgumentParser()
-parser.add_argument('--off_data', type=int, default=1)
-parser.add_argument('--off_gan', type=int, default=1)
-parser.add_argument('--alpha', type=float, default=0.03)
-parser.add_argument('--path_result', type=str, default='result', help='result path')
-
-args = parser.parse_args()
+args.path_data = 'data/'
+args.path_result = 'result/'
 
 name_data = offdata2name(args.off_data)
 name_gan = offgan2name(args.off_gan)

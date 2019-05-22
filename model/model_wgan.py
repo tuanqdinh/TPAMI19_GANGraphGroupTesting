@@ -1,10 +1,11 @@
 import torch.nn as nn
 import torch.nn.functional as F
-
+import torch
+import numpy as np
 img_shape = (65, 65)
 
-class Generator(nn.Module):
-    def __init__(self):
+class Generator_OLD(nn.Module):
+    def __init__(self, input_size, output_size, hidden_size, adj):
         super(Generator, self).__init__()
 
         def block(in_feat, out_feat, normalize=True):
@@ -15,12 +16,11 @@ class Generator(nn.Module):
             return layers
 
         self.model = nn.Sequential(
-            *block(opt.latent_dim, 128, normalize=False),
-            *block(128, 256),
+            *block(input_size, 256, normalize=False),
             *block(256, 512),
             *block(512, 1024),
             nn.Linear(1024, int(np.prod(img_shape))),
-            nn.Tanh()
+            nn.ReLU()
         )
 
     def forward(self, z):
@@ -28,9 +28,63 @@ class Generator(nn.Module):
         img = img.view(img.shape[0], *img_shape)
         return img
 
+class Generator(nn.Module):
+    def __init__(self, input_size, output_size, hidden_size, adj):
+        super(Generator, self).__init__()
+        self.adj = adj
+        self.block1 = nn.Sequential(
+            nn.Linear(input_size, hidden_size),
+            nn.BatchNorm1d(num_features=hidden_size),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Linear(hidden_size, 2 * hidden_size),
+            nn.BatchNorm1d(num_features=2*hidden_size),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Linear(2 * hidden_size, output_size),
+            )
+        self.block2 = nn.Sequential(
+            nn.ReLU()
+        )
+
+    def forward(self, noise):
+        output = self.block1(noise)
+        output = torch.mm(output, self.adj)
+        output = self.block2(output)
+        return output
 
 class Discriminator(nn.Module):
-    def __init__(self):
+
+    def __init__(self, adj, input_size, hidden_size, output_size=1):
+        super(Discriminator, self).__init__()
+
+        self.adj = adj
+        self.block0 = nn.Sequential(
+            nn.Linear(input_size, input_size),
+            nn.BatchNorm1d(num_features=input_size),
+            nn.LeakyReLU(0.2, inplace=True)
+        )
+        self.block1 = nn.Sequential(
+            nn.Linear(input_size, 2 * hidden_size),
+            nn.BatchNorm1d(num_features=2*hidden_size),
+            nn.LeakyReLU(0.2, inplace=True)
+        )
+        self.block2 = nn.Sequential(
+            nn.Linear(2 * hidden_size, hidden_size),
+            nn.BatchNorm1d(num_features=hidden_size),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Linear(hidden_size, output_size),
+        )
+
+    def forward(self, inputs):
+        x = self.block0(inputs)
+        x = torch.mm(x, self.adj)
+        x = self.block1(x)
+        output = self.block2(x)
+        return output.view(-1)
+        # return F.log_softmax(output, dim=1)
+
+
+class Discriminator_OLD(nn.Module):
+    def __init__(self, adj, input_size, hidden_size, output_size=1):
         super(Discriminator, self).__init__()
 
         self.model = nn.Sequential(
