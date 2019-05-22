@@ -74,7 +74,11 @@ adj = torch.tensor(A, dtype=torch.float32).to(device)
 # adj = A.to(device).to_dense()
 
 data = torch.tensor(signals, dtype=torch.float32)
+data = torch.exp(data) # exp -0.1 to 0.1
+
 mu_data = torch.mean(data, dim=0).to(device)
+mu2_data = torch.mean(data * data, dim=0).to(device)
+
 train = torch.utils.data.TensorDataset(data)
 dataloader = torch.utils.data.DataLoader(train, batch_size=args.batch_size, shuffle=True, num_workers=int(args.num_workers))
 
@@ -158,11 +162,14 @@ else:
 			d_fake = netD(fake)
 			g_loss = adversarial_loss(d_fake, valid_label)
 
-			# mean
+			# mean Dim=0 or 1
 			m = fake.mean(dim=0) - mu_data
-			mean_norm = (m * m).sum()
-			g_loss += 100000000 * mean_norm
-			from IPython import embed; embed()
+			mean_norm = torch.sqrt((m * m).sum())
+			fake2 = fake * fake
+			m2 = fake2.mean(dim=0) - mu2_data
+			m2_norm = torch.sqrt((m2*m2).sum())
+
+			g_loss += 10 * mean_norm + 20 *  m2_norm
 
 			g_loss.backward()
 			optimizerG.step()
@@ -175,7 +182,6 @@ else:
 
 			d_loss.backward()
 			optimizerD.step()
-
 
 			# Write logs and save samples
 			lib.plot.plot(output_path + '/disc_cost', d_loss.cpu().data.numpy())

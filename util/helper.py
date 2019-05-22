@@ -128,7 +128,9 @@ def offctrl2name(off_ctrl):
 		return 'cn'
 
 def offgan2name(off):
-	if off== 1:
+	if off== 0:
+		return 'simple'
+	elif off== 1:
 		return 'wgan'
 	elif off == 11:
 		return 'wgan-conv'

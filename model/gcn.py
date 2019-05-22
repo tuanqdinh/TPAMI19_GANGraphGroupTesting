@@ -78,12 +78,8 @@ class Discriminator(nn.Module):
         )
 
     def forward(self, inputs):
-<<<<<<< HEAD
-        x = self.gc1(inputs.t(), self.adj) # H = AHW (nxn nxd dxd): d is #-features on each node
-=======
         inputs = inputs.unsqueeze(2)
         x = self.gc1(inputs, self.adj)
->>>>>>> 36727965644b03d6188132d66acb74c64c6fc6b7
         x = self.block1(x)
         x = self.gc2(x, self.adj)
         output = self.block2(x)
