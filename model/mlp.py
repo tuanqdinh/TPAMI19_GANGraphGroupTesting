@@ -3,18 +3,15 @@ import torch.nn.functional as F
 
 
 class Generator(nn.Module):
-    def __init__(self, input_size, output_size, hidden_size):
+    def __init__(self, input_size, output_size, hidden_size, adj):
         super(Generator, self).__init__()
 
         main = nn.Sequential(
             nn.Linear(input_size, hidden_size),
-            nn.BatchNorm1d(num_features=hidden_size),
-            nn.LeakyReLU(0.2, inplace=True),
+            nn.Sigmoid();
             nn.Linear(hidden_size, 2 * hidden_size),
-            nn.BatchNorm1d(num_features=2*hidden_size),
-            nn.LeakyReLU(0.2, inplace=True),
+            nn.Sigmoid();
             nn.Linear(2 * hidden_size, output_size),
-            nn.Sigmoid()
         )
         self.main = main
 
@@ -25,7 +22,7 @@ class Generator(nn.Module):
 
 class Discriminator(nn.Module):
 
-    def __init__(self, input_size, hidden_size):
+    def __init__(self, input_size, hidden_size, adj):
         super(Discriminator, self).__init__()
 
         main = nn.Sequential(
@@ -36,6 +33,7 @@ class Discriminator(nn.Module):
             nn.BatchNorm1d(num_features=hidden_size),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Linear(hidden_size, 1),
+            nn.Sigmoid()
         )
         self.main = main
 

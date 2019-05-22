@@ -40,7 +40,7 @@ class GraphConvolution(Module):
                + str(self.out_features) + ')'
 
 class Generator(nn.Module):
-    def __init__(self, input_size, output_size, hidden_size):
+    def __init__(self, input_size, output_size, hidden_size, adj):
         super(Generator, self).__init__()
 
         self.main = nn.Sequential(
@@ -61,7 +61,7 @@ class Generator(nn.Module):
 
 class Discriminator(nn.Module):
 
-    def __init__(self, input_size, hidden_size, adj):
+    def __init__(self, input_size, hidden_size, adj, output_size=1):
         super(Discriminator, self).__init__()
 
         self.adj = adj
@@ -74,11 +74,12 @@ class Discriminator(nn.Module):
         self.block2 = nn.Sequential(
             nn.BatchNorm1d(num_features=hidden_size),
             nn.LeakyReLU(0.2, inplace=True),
-            nn.Linear(hidden_size, 1),
+            nn.Linear(hidden_size, output_size),
         )
 
     def forward(self, inputs):
-        x = self.gc1(inputs.t(), self.adj)
+        inputs = inputs.unsqueeze(2)
+        x = self.gc1(inputs, self.adj)
         x = self.block1(x)
         x = self.gc2(x, self.adj)
         output = self.block2(x)

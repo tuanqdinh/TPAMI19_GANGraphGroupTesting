@@ -76,7 +76,7 @@ def inf_train_gen(data, batch_size):
 			yield data[start:end, :]
 
 
-def load_data(data_path, is_control=False):
+def load_data_sparse(data_path, is_control=False):
 	mat = spio.loadmat(data_path, squeeze_me=True)
 	A = mat['A']
 	L = csgraph.laplacian(A, normed=False)
@@ -89,6 +89,19 @@ def load_data(data_path, is_control=False):
 	adj = normalize(A + sp.eye(A.shape[0]))
 	adj = sparse_mx_to_torch_sparse_tensor(adj)
 	return adj, L.todense(), signals
+
+def load_data(data_path, is_control=False):
+	mat = spio.loadmat(data_path, squeeze_me=True)
+	A = mat['A']
+	L = csgraph.laplacian(A, normed=False)
+	if is_control:
+		signals = np.asarray(mat['cn_signals'])
+	else:
+		signals = np.asarray(mat['ad_signals'])
+	# signals = normalize(signals, axis=1, norm='l2')
+	signals = signals/5
+	adj = normalize(A + sp.eye(A.shape[0]))
+	return adj, L, signals
 
 def offdata2name(off_data):
 	if off_data == 1:
