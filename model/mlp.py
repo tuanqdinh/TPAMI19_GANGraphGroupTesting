@@ -7,7 +7,9 @@ class Generator(nn.Module):
         super(Generator, self).__init__()
 
         main = nn.Sequential(
-            nn.Linear(input_size, hidden_size),
+            nn.Linear(input_size, hidden_size//2),
+            nn.ReLU(),
+            nn.Linear(hidden_size//2, hidden_size ),
             nn.ReLU(),
             nn.Linear(hidden_size, 2 * hidden_size),
             nn.ReLU(),
