@@ -8,9 +8,9 @@ class Generator(nn.Module):
 
         main = nn.Sequential(
             nn.Linear(input_size, hidden_size),
-            nn.Sigmoid();
+            nn.ReLU(),
             nn.Linear(hidden_size, 2 * hidden_size),
-            nn.Sigmoid();
+            nn.ReLU(),
             nn.Linear(2 * hidden_size, output_size),
         )
         self.main = main

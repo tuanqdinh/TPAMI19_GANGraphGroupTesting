@@ -188,9 +188,9 @@ else:
 			lib.plot.plot(output_path + '/gen_cost', g_loss.cpu().data.numpy())
 			# Print log info
 			if iteration == total_step:
-				log('Epoch [{}/{}], Step [{}/{}], D-cost: {:.4f}, G-cost: {:.4f}'
-					  .format(epoch, args.num_epochs, iteration, total_step, d_loss.cpu().data.numpy(), g_loss.cpu().data.numpy()))
-			# lib.plot.tick()
+				log('Epoch [{}/{}], Step [{}/{}], D-cost: {:.4f}, G-cost: {:.4f}, mean-norm: {:.4f}, mean2-norm: {:.4f}'
+					  .format(epoch, args.num_epochs, iteration, total_step, d_loss.cpu().data.numpy(), g_loss.cpu().data.numpy(), mean_norm.cpu().data.numpy(), m2_norm.cpu().data.numpy()))
+					  # lib.plot.tick()
 	print('save models')
 	torch.save(netG.state_dict(), netG_path)
 	torch.save(netD.state_dict(), netD_path)
