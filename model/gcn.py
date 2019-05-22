@@ -78,7 +78,7 @@ class Discriminator(nn.Module):
         )
 
     def forward(self, inputs):
-        x = self.gc1(inputs.t(), self.adj)
+        x = self.gc1(inputs.t(), self.adj) # H = AHW (nxn nxd dxd): d is #-features on each node
         x = self.block1(x)
         x = self.gc2(x, self.adj)
         output = self.block2(x)
