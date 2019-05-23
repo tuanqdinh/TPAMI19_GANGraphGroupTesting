@@ -159,8 +159,8 @@ else:
 			with torch.no_grad():
 				noisev = autograd.Variable(noise)  # totally freeze netG
 			fake = autograd.Variable(netG(noisev))
-			d_fake = netD(fake)
-			g_loss = adversarial_loss(d_fake, valid_label)
+			# d_fake = netD(fake)
+			# g_loss = adversarial_loss(d_fake, valid_label)
 
 			# mean Dim=0 or 1
 			m = fake.mean(dim=0) - mu_data
@@ -169,7 +169,7 @@ else:
 			m2 = fake2.mean(dim=0) - mu2_data
 			m2_norm = torch.sqrt((m2*m2).sum())
 
-			g_loss += 10 * mean_norm + 20 *  m2_norm
+			g_loss = 10 * mean_norm + 200 *  m2_norm
 
 			g_loss.backward()
 			optimizerG.step()
@@ -179,9 +179,9 @@ else:
 			fake_loss = adversarial_loss(netD(fake.detach()), fake_label)
 
 			d_loss = (real_loss + fake_loss)/2
-
-			d_loss.backward()
-			optimizerD.step()
+			#
+			# d_loss.backward()
+			# optimizerD.step()
 
 			# Write logs and save samples
 			lib.plot.plot(output_path + '/disc_cost', d_loss.cpu().data.numpy())

@@ -125,6 +125,10 @@ lap_matrx = torch.tensor(L, dtype=torch.float32).to(device)
 adj = A.to(device).to_dense()
 
 data = torch.tensor(signals, dtype=torch.float32)
+data = torch.exp(data) # exp -0.1 to 0.1
+mu_data = torch.mean(data, dim=0).to(device)
+mu2_data = torch.mean(data * data, dim=0).to(device)
+
 train = torch.utils.data.TensorDataset(data)
 dataloader = torch.utils.data.DataLoader(train, batch_size=args.batch_size, shuffle=True, num_workers=int(args.num_workers))
 
@@ -311,10 +315,6 @@ else:
 				reg = torch.dot(diff, torch.mv(lap_matrx, diff))
 				G_cost = G_cost + 0.1 * reg / lap_matrx.shape[0]
 
-				m = real.mean(dim=0) - fake.mean(dim=0)
-				G_cost += (m * m).mean()
-
-			#from IPython import embed; embed()
 			G_cost.backward()
 			optimizerG.step()
 
