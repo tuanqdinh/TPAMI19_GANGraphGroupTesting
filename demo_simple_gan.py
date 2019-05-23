@@ -158,7 +158,7 @@ else:
 			noise = torch.randn(real_data_v.shape[0], args.embed_size).to(device)
 			with torch.no_grad():
 				noisev = autograd.Variable(noise)  # totally freeze netG
-			fake = autograd.Variable(netG(noisev))
+			fake = netG(noisev)
 			# d_fake = netD(fake)
 			# g_loss = adversarial_loss(d_fake, valid_label)
 
