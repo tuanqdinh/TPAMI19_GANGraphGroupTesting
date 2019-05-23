@@ -158,7 +158,7 @@ else:
 			noise = torch.randn(real_data_v.shape[0], args.embed_size).to(device)
 			with torch.no_grad():
 				noisev = autograd.Variable(noise)  # totally freeze netG
-			fake = autograd.Variable(netG(noisev))
+			fake = netG(noisev)
 			# d_fake = netD(fake)
 			# g_loss = adversarial_loss(d_fake, valid_label)
 
@@ -187,9 +187,9 @@ else:
 			lib.plot.plot(output_path + '/disc_cost', d_loss.cpu().data.numpy())
 			lib.plot.plot(output_path + '/gen_cost', g_loss.cpu().data.numpy())
 			# Print log info
-			# if iteration == total_step:
-		log('Epoch [{}/{}], Step [{}/{}], D-cost: {:.4f}, G-cost: {:.4f}, mean-norm: {:.4f}, mean2-norm: {:.4f}'
-			  .format(epoch, args.num_epochs, iteration, total_step, d_loss.cpu().data.numpy(), g_loss.cpu().data.numpy(), mean_norm.cpu().data.numpy(), m2_norm.cpu().data.numpy()))
+			#if iteration == total_step:
+			log('Epoch [{}/{}], Step [{}/{}], D-cost: {:.4f}, G-cost: {:.4f}, mean-norm: {:.4f}, mean2-norm: {:.4f}'
+				  .format(epoch, args.num_epochs, iteration, total_step, d_loss.cpu().data.numpy(), g_loss.cpu().data.numpy(), mean_norm.cpu().data.numpy(), m2_norm.cpu().data.numpy()))
 					  # lib.plot.tick()
 	print('save models')
 	torch.save(netG.state_dict(), netG_path)
