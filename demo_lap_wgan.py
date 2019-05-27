@@ -287,7 +287,7 @@ if True:
 			std_rse = (std_r**2).sum()
 
 				# variance
-			G_cost += 10 * mu_rse + 20 * std_rse
+			G_cost += 10 * mu_rse + 40 * std_rse
 
 			G_cost.backward()
 			optimizerG.step()
