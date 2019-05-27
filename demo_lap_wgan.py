@@ -98,7 +98,9 @@ else:
 
 data = torch.tensor(signals, dtype=torch.float32)
 
-data = torch.exp(data) # exp -0.1 to 0.1
+# data = torch.exp(data) # exp -0.1 to 0.1
+data = torch.exp(100 * data)
+
 mu_data = torch.mean(data, dim=0).to(device)
 mu2_data = torch.mean(data * data, dim=0).to(device)
 
@@ -256,7 +258,7 @@ if True:
 			# G_cost = -D_fake_cost
 
 			# Temporarily comment
-			G_cost = -D_fake.mean() + D_fake.mean()
+			G_cost = -D_fake.mean()
 
 			if OFFSET_LAPGAN == args.off_model: # laplacian
 				xl = torch.mm(fake, lap_matrx)
@@ -269,12 +271,12 @@ if True:
 			# mean Dim=0 or 1
 			m = fake.mean(dim=0) - mu_data
 			mean_norm = torch.sqrt((m * m).sum())
-			fake2 = fake * fake
-			m2 = fake2.mean(dim=0) - mu2_data
+			fake2 = fake * fake - fake ** 2
+			m2 = fake2.mean(dim=0) - (mu2_data - mu_data**2)
 			m2_norm = torch.sqrt((m2*m2).sum())
 
 				# variance
-			G_cost += 10 * mean_norm + 20 *  m2_norm
+			G_cost += 10 * mean_norm + 100 *  m2_norm
 
 			G_cost.backward()
 			optimizerG.step()

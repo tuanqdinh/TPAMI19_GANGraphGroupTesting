@@ -74,7 +74,7 @@ adj = torch.tensor(A, dtype=torch.float32).to(device)
 # adj = A.to(device).to_dense()
 
 data = torch.tensor(signals, dtype=torch.float32)
-data = torch.exp(data) # exp -0.1 to 0.1
+data = torch.exp(100 * data) # exp -0.1 to 0.1
 
 mu_data = torch.mean(data, dim=0).to(device)
 mu2_data = torch.mean(data * data, dim=0).to(device)
