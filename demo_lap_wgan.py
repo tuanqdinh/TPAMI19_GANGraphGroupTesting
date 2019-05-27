@@ -167,8 +167,8 @@ def generate_image(netG, frame_index, nsamples, img_size=65):
 	sample_std = np.std(samples, axis=0)
 	data_mu = np.mean(real_data, axis=0)
 	data_std = np.std(real_data, axis=0)
-	print("Mu: ", np.linalg.norm(sample_mu, data_mu))
-	print("std: ", np.linalg.norm(sample_std, data_std))
+	print("Mu: ", np.linalg.norm(sample_mu - data_mu))
+	print("std: ", np.linalg.norm(sample_std - data_std))
 
 	from IPython import embed;embed()
 
@@ -184,12 +184,12 @@ optimizerD = optim.Adam(netD.parameters(), lr=1e-4, betas=(0.5, 0.9))
 optimizerG = optim.Adam(netG.parameters(), lr=1e-4, betas=(0.5, 0.9))
 
 #####--------------Training----------------------------
-if os.path.isfile(netG_path) and False:
+if os.path.isfile(netG_path):
 	print('Load existing models')
 	netG.load_state_dict(torch.load(netG_path))
 	netD.load_state_dict(torch.load(netD_path))
-#else:
-if True:
+else:
+#if True:
 	for epoch in range(args.num_epochs):
 		data_iter = iter(dataloader)
 		total_step = len(data_iter)
