@@ -122,7 +122,7 @@ logf = open(os.path.join(log_path, "log%s.txt" % strftime("%Y-%m-%d-%H:%M:%S", g
 data_path = os.path.join(args.data_path, '{}/data_{}_4k.mat'.format(name_data, name_data))
 A, L, signals = load_data(data_path, is_control=not(1 == args.off_ctrl))
 lap_matrx = torch.tensor(L, dtype=torch.float32).to(device)
-adj = A.to(device).to_dense()
+adj = torch.tensor(A, dtype=torch.float32).to(device)
 
 data = torch.tensor(signals, dtype=torch.float32)
 data = torch.exp(data) # exp -0.1 to 0.1
@@ -217,11 +217,12 @@ optimizerD = optim.Adam(netD.parameters(), lr=1e-4, betas=(0.5, 0.9))
 optimizerG = optim.Adam(netG.parameters(), lr=1e-4, betas=(0.5, 0.9))
 
 #####--------------Training----------------------------
-if os.path.isfile(netG_path) and False:
+if os.path.isfile(netG_path): #and False:
 	print('Load existing models')
 	netG.load_state_dict(torch.load(netG_path))
 	netD.load_state_dict(torch.load(netD_path))
-else:
+#else:
+if True:
 	for p in netG.parameters():
 		p.requires_grad = True
 	for epoch in range(args.num_epochs):
