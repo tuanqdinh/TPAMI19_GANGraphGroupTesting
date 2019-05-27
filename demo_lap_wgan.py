@@ -162,7 +162,15 @@ def generate_image(netG, frame_index, nsamples, img_size=65):
 	plt.scatter(range(100), x[:100])
 	plt.scatter(range(100), y[:100])
 	plt.show()
-	#from IPython import embed;embed()
+
+	sample_mu = np.mean(samples, axis=0)
+	sample_std = np.std(samples, axis=0)
+	data_mu = np.mean(real_data, axis=0)
+	data_std = np.std(real_data, axis=0)
+	print("Mu: ", np.linalg.norm(sample_mu, data_mu))
+	print("std: ", np.linalg.norm(sample_std, data_std))
+
+	from IPython import embed;embed()
 
 # ==================Model======================
 netG = Generator(input_size=args.embed_size, output_size=args.signal_size, hidden_size=args.hidden_size, adj=adj).to(device)

@@ -10,7 +10,7 @@ parser.add_argument('--log_step', type=int, default=5, help='step size for prini
 parser.add_argument('--save_step', type=int, default=10, help='step size for saving trained models')
 
 parser.add_argument('--batch_size', type=int, default=64)
-parser.add_argument('--num_epochs', type=int, default=200)
+parser.add_argument('--num_epochs', type=int, default=300)
 parser.add_argument('--critic_iters', type=int, default=2)
 parser.add_argument('--learning_rate', type=float, default=0.005)
 parser.add_argument('--LAMBDA', type=float, default=10)
