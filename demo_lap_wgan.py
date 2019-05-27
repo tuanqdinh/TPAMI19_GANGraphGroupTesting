@@ -285,23 +285,15 @@ if True:
 			std_rse = (std_r**2).sum()
 
 				# variance
-			G_cost += 10 * mean_norm + 50 *  m2_norm
+			G_cost += 10 * mu_rse + 50 * std_rse
 
 			G_cost.backward()
 			optimizerG.step()
 
-			# Write logs and save samples
-			lib.plot.plot(output_path + '/gradient_penalty', gradient_penalty.cpu().data.numpy())
-			lib.plot.plot(output_path + '/disc_cost', D_cost.cpu().data.numpy())
-			lib.plot.plot(output_path + '/wasserstein_distance', Wasserstein_D.cpu().data.numpy())
-			lib.plot.plot(output_path + '/gen_cost', G_cost.cpu().data.numpy())
 			# Print log info
 			if iteration == total_step:
-				# lib.plot.flush()
-				# generate_image(netG, frame_index=epoch, img_size=args.img_size, nsamples=args.batch_size)
-				log('Epoch [{}/{}], Step [{}/{}], D-cost: {:.4f}, G-cost: {:.4f}, mean-norm: {:.4f}, mean2-norm: {:.4f}'
-					  .format(epoch, args.num_epochs, iteration, total_step, D_cost.cpu().data.numpy(), G_cost.cpu().data.numpy(), mean_norm.cpu().data.numpy(), m2_norm.cpu().data.numpy()))
-			# lib.plot.tick()
+				log('Epoch [{}/{}], Step [{}/{}], D-cost: {:.4f}, G-cost: {:.4f}, mean-norm: {:.4f}, std-norm: {:.4f}'
+					  .format(epoch, args.num_epochs, iteration, total_step, D_cost.cpu().data.numpy(), G_cost.cpu().data.numpy(), mu_rse.cpu().data.numpy(), std_rse.cpu().data.numpy()))
 	print('save models')
 	torch.save(netG.state_dict(), netG_path)
 	torch.save(netD.state_dict(), netD_path)
