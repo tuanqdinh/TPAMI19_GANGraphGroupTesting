@@ -205,7 +205,7 @@ if True:
 				p.requires_grad = True  # they are set to False below in netG update
 
 			iter_d = 0
-			while iter_d < args.critic_iters and iteration < total_step - 1:
+			while iter_d < args.critic_iters and iteration < total_step:
 				iter_d += 1
 				_data = next(data_iter); iteration += 1
 
