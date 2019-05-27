@@ -281,7 +281,7 @@ if True:
 			std_sample = fake.std(dim=0)
 			mu_r = (mu_sample - mu_data) / mu_data
 			mu_rse = (mu_r**2).sum()
-			std_r = (std_sample - std_data) / mu_data
+			std_r = (std_sample - std_data) / std_data
 			std_rse = (std_r**2).sum()
 
 				# variance
