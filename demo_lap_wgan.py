@@ -101,7 +101,7 @@ data = torch.tensor(signals, dtype=torch.float32)
 
 # data = torch.exp(data) # exp -0.1 to 0.1
 data = torch.exp(10 * data)
-args.batch_size = data.shape[1]
+args.batch_size = data.shape[0]
 
 mu_data = torch.mean(data, dim=0).to(device)
 std_data = torch.std(data, dim=0).to(device)
