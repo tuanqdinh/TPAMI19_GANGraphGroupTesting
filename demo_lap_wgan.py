@@ -296,7 +296,7 @@ if True:
 				log('Epoch [{}/{}], Step [{}/{}], D-cost: {:.4f}, G-cost: {:.4f}, mean-norm: {:.4f}, std-norm: {:.4f}'
 					  .format(epoch, args.num_epochs, iteration, total_step, D_cost.cpu().data.numpy(), G_cost.cpu().data.numpy(), mu_rse.cpu().data.numpy(), std_rse.cpu().data.numpy()))
 
-			if (mu_rse < 0.5 and std_rse < 0.5):
+			if (mu_rse < 0.5 and std_rse < 0.1):
 				print('Break')
 				is_break = True
 				break
