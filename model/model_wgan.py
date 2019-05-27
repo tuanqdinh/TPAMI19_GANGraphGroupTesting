@@ -4,7 +4,7 @@ import torch
 import numpy as np
 img_shape = (65, 65)
 
-class Generator_OLD(nn.Module):
+class Generator(nn.Module):
     def __init__(self, input_size, output_size, hidden_size, adj):
         super(Generator, self).__init__()
 
@@ -28,7 +28,7 @@ class Generator_OLD(nn.Module):
         img = img.view(img.shape[0], *img_shape)
         return img
 
-class Generator(nn.Module):
+class Generator2(nn.Module):
     def __init__(self, input_size, output_size, hidden_size, adj):
         super(Generator, self).__init__()
         self.adj = adj
@@ -51,7 +51,7 @@ class Generator(nn.Module):
         output = self.block2(output)
         return output
 
-class Discriminator(nn.Module):
+class Discriminator2(nn.Module):
 
     def __init__(self, adj, input_size, hidden_size, output_size=1):
         super(Discriminator, self).__init__()
@@ -83,7 +83,7 @@ class Discriminator(nn.Module):
         # return F.log_softmax(output, dim=1)
 
 
-class Discriminator_OLD(nn.Module):
+class Discriminator(nn.Module):
     def __init__(self, adj, input_size, hidden_size, output_size=1):
         super(Discriminator, self).__init__()
 
