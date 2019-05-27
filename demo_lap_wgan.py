@@ -184,7 +184,7 @@ optimizerD = optim.Adam(netD.parameters(), lr=1e-4, betas=(0.5, 0.9))
 optimizerG = optim.Adam(netG.parameters(), lr=1e-4, betas=(0.5, 0.9))
 
 #####--------------Training----------------------------
-if os.path.isfile(netG_path) and False:
+if os.path.isfile(netG_path): # and False:
 	print('Load existing models')
 	netG.load_state_dict(torch.load(netG_path))
 	netD.load_state_dict(torch.load(netD_path))
@@ -294,6 +294,11 @@ if True:
 			if iteration == total_step:
 				log('Epoch [{}/{}], Step [{}/{}], D-cost: {:.4f}, G-cost: {:.4f}, mean-norm: {:.4f}, std-norm: {:.4f}'
 					  .format(epoch, args.num_epochs, iteration, total_step, D_cost.cpu().data.numpy(), G_cost.cpu().data.numpy(), mu_rse.cpu().data.numpy(), std_rse.cpu().data.numpy()))
+
+			if (mu_rse < 0.5 and std_rse < 0.5):
+				args.num_epochs = 0
+				break
+
 	print('save models')
 	torch.save(netG.state_dict(), netG_path)
 	torch.save(netD.state_dict(), netD_path)
