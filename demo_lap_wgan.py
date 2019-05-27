@@ -99,10 +99,10 @@ else:
 data = torch.tensor(signals, dtype=torch.float32)
 
 # data = torch.exp(data) # exp -0.1 to 0.1
-data = torch.exp(2 * data)
+data = torch.exp(10 * data)
 
 mu_data = torch.mean(data, dim=0).to(device)
-mu2_data = torch.mean(data * data, dim=0).to(device)
+std_data = torch.std(data, dim=0).to(device)
 
 train = torch.utils.data.TensorDataset(data)
 dataloader = torch.utils.data.DataLoader(train, batch_size=args.batch_size, shuffle=True, num_workers=int(args.num_workers))
@@ -184,12 +184,12 @@ optimizerD = optim.Adam(netD.parameters(), lr=1e-4, betas=(0.5, 0.9))
 optimizerG = optim.Adam(netG.parameters(), lr=1e-4, betas=(0.5, 0.9))
 
 #####--------------Training----------------------------
-if os.path.isfile(netG_path):
+if os.path.isfile(netG_path) and False:
 	print('Load existing models')
 	netG.load_state_dict(torch.load(netG_path))
 	netD.load_state_dict(torch.load(netD_path))
-else:
-#if True:
+# else:
+if True:
 	for epoch in range(args.num_epochs):
 		data_iter = iter(dataloader)
 		total_step = len(data_iter)
@@ -277,14 +277,15 @@ else:
 				G_cost = G_cost + args.alpha * reg
 
 			# mean Dim=0 or 1
-			m = fake.mean(dim=0) - mu_data
-			mean_norm = torch.sqrt((m * m).sum())
-			fake2 = fake * fake - fake ** 2
-			m2 = fake2.mean(dim=0) - (mu2_data - mu_data**2)
-			m2_norm = torch.sqrt((m2*m2).sum())
+			mu_sample = fake.mean(dim=0)
+			std_sample = fake.std(dim=0)
+			mu_r = (mu_sample - mu_data) / mu_data
+			mu_rse = (mu_r**2).sum()
+			std_r = (std_sample - std_data) / mu_data
+			std_rse = (std_r**2).sum()
 
 				# variance
-			G_cost += 10 * mean_norm + 100 *  m2_norm
+			G_cost += 10 * mean_norm + 50 *  m2_norm
 
 			G_cost.backward()
 			optimizerG.step()
