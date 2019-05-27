@@ -75,8 +75,8 @@ def _load_signals():
 				ad_signals = ad_signals[:1000, :]
 				cn_signals = cn_signals[:1000, :]
 		# add exp
-		ad_signals = np.exp(ad_signals)
-		cn_signals = np.exp(cn_signals)
+		ad_signals = np.exp(10 * ad_signals)
+		cn_signals = np.exp(10 * cn_signals)
 	else:
 		ad_path = os.path.join(path_generated_sample, 'samples_{}-{}_{}.npy'.format(name_data_gan_model, 'ad', args.alpha))
 		cn_path = os.path.join(path_generated_sample, 'samples_{}-{}_{}.npy'.format(name_data_gan_model, 'cn', args.alpha))
@@ -85,7 +85,7 @@ def _load_signals():
 			cn_signals = np.load(cn_path)
 		else:
 			_, _, real_ad_signals = load_data(path_real_data, is_control=False)
-			_, _,  real_cn_signals = load_data(path_real_data, is_control=True)
+			_, _, real_cn_signals = load_data(path_real_data, is_control=True)
 			ad_signals = np.load(ad_path)[:real_ad_signals.shape[0], :]
 			cn_signals = np.load(cn_path)[:real_cn_signals.shape[0], :]
 
@@ -108,12 +108,11 @@ def par_best(j):
 with MyPool(num_cores) as p:
 	pvalues = p.map(par_best, range(n_pixels))
 
-
 p_values = np.asarray(pvalues)
 rejects, pvals_corrected, _, _ = multipletests(p_values, alpha=ALPHA_BH, method='fdr_bh')
 # print("Total time: {:4.4f}".format(time.time() - start_time))
 
-from IPython import embed; embed()
+# from IPython import embed; embed()
 
 np.save(path_saved_pvalue, pvals_corrected)
 np.save(path_saved_reject, rejects)
