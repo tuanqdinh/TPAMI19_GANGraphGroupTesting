@@ -96,7 +96,6 @@ else:
 	adj = torch.tensor(A, dtype=torch.float32).to(device)
 	# adj = A.to(device).to_dense()
 
-
 data = torch.tensor(signals, dtype=torch.float32)
 
 # data = torch.exp(data) # exp -0.1 to 0.1
@@ -288,7 +287,7 @@ if True:
 			std_rse = (std_r**2).sum()
 
 				# variance
-			G_cost += 10 * mu_rse + 50 * std_rse
+			G_cost += 10 * mu_rse + 20 * std_rse
 
 			G_cost.backward()
 			optimizerG.step()
@@ -298,7 +297,7 @@ if True:
 				log('Epoch [{}/{}], Step [{}/{}], D-cost: {:.4f}, G-cost: {:.4f}, mean-norm: {:.4f}, std-norm: {:.4f}'
 					  .format(epoch, args.num_epochs, iteration, total_step, D_cost.cpu().data.numpy(), G_cost.cpu().data.numpy(), mu_rse.cpu().data.numpy(), std_rse.cpu().data.numpy()))
 
-			if (mu_rse < 0.5 and std_rse < 0.1):
+			if (mu_rse < 0.1 and std_rse < 0.1):
 				print('Break')
 				is_break = True
 				break
