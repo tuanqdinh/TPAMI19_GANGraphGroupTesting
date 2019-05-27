@@ -100,8 +100,8 @@ else:
 data = torch.tensor(signals, dtype=torch.float32)
 
 # data = torch.exp(data) # exp -0.1 to 0.1
-data = torch.exp(10 * data)
-args.batch_size = data.shape[0]
+data = torch.exp(data)
+# args.batch_size = data.shape[0]
 
 mu_data = torch.mean(data, dim=0).to(device)
 std_data = torch.std(data, dim=0).to(device)
@@ -205,7 +205,7 @@ if True:
 				p.requires_grad = True  # they are set to False below in netG update
 
 			iter_d = 0
-			while iter_d < args.critic_iters and iteration < total_step:
+			while iter_d < args.critic_iters and iteration < total_step - 1:
 				iter_d += 1
 				_data = next(data_iter); iteration += 1
 

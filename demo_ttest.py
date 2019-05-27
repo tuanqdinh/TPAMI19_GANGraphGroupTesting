@@ -75,8 +75,8 @@ def _load_signals():
 				ad_signals = ad_signals[:1000, :]
 				cn_signals = cn_signals[:1000, :]
 		# add exp
-		ad_signals = np.exp(10 * ad_signals)
-		cn_signals = np.exp(10 * cn_signals)
+		ad_signals = np.exp(ad_signals)
+		cn_signals = np.exp(cn_signals)
 	else:
 		ad_path = os.path.join(path_generated_sample, 'samples_{}-{}_{}.npy'.format(name_data_gan_model, 'ad', args.alpha))
 		cn_path = os.path.join(path_generated_sample, 'samples_{}-{}_{}.npy'.format(name_data_gan_model, 'cn', args.alpha))
