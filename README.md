@@ -21,7 +21,7 @@ This project investigates the feasibility of conducting statistical group differ
 **Citation**
 
 If you use this code or dataset in your research, please cite the following paper:
-```tex
+```bibtex
 @article{dinh2022performing,
   title={Performing Group Difference Testing on Graph Structured Data from GANs: Analysis and Applications in Neuroimaging},
   author={Dinh, Tuan Q and Xiong, Yunyang and Huang, Zhichun and Vo, Tien and Mishra, Akshay and Kim, Won Hwa and Ravi, Sathya N and Singh, Vikas},
